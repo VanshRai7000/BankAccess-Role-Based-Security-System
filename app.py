@@ -551,14 +551,31 @@ def delete_user(user_id):
     if user_id == session['user_id']:
         flash('You cannot delete your own account.', 'error')
         return redirect(url_for('manage_users'))
-    db   = get_db()
+    
+    db = get_db()
     user = db.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    
     if user:
-        db.execute("DELETE FROM users WHERE id=?", (user_id,))
-        db.commit()
-        log_action(session['user_id'], session['username'], 'delete', 'SUCCESS',
-                   f'Deleted user {user["username"]}', request.remote_addr)
-        flash(f'User "{user["username"]}" deleted.', 'success')
+        try:
+            # Delete accounts owned by the user (will cascade to their transactions)
+            db.execute("DELETE FROM accounts WHERE owner_id=?", (user_id,))
+            
+            # Delete transactions where this user is the initiator or approver
+            db.execute("DELETE FROM transactions WHERE initiated_by=? OR approved_by=?", (user_id, user_id))
+            
+            # Finally, delete the user
+            db.execute("DELETE FROM users WHERE id=?", (user_id,))
+            
+            db.commit()
+            log_action(session['user_id'], session['username'], 'delete', 'SUCCESS',
+                       f'Deleted user {user["username"]}', request.remote_addr)
+            flash(f'User "{user["username"]}" deleted.', 'success')
+        except Exception as e:
+            db.rollback()
+            log_action(session['user_id'], session['username'], 'delete', 'FAILED',
+                       f'Failed to delete user {user["username"]}: {str(e)}', request.remote_addr)
+            flash(f'Error deleting user: {str(e)}', 'error')
+    
     db.close()
     return redirect(url_for('manage_users'))
 

@@ -44,7 +44,7 @@ def init_db():
             account_type   TEXT    DEFAULT 'savings',
             balance        REAL    DEFAULT 0.0,
             created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (owner_id) REFERENCES users(id)
+            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
         CREATE TABLE IF NOT EXISTS transactions (
@@ -59,10 +59,10 @@ def init_db():
             notes        TEXT    DEFAULT '',
             created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id)      REFERENCES users(id),
-            FOREIGN KEY (account_id)   REFERENCES accounts(account_id),
-            FOREIGN KEY (initiated_by) REFERENCES users(id),
-            FOREIGN KEY (approved_by)  REFERENCES users(id)
+            FOREIGN KEY (user_id)      REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (account_id)   REFERENCES accounts(account_id) ON DELETE SET NULL,
+            FOREIGN KEY (initiated_by) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (approved_by)  REFERENCES users(id) ON DELETE SET NULL
         );
 
         CREATE TABLE IF NOT EXISTS logs (

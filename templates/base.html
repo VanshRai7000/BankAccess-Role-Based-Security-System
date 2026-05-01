@@ -99,11 +99,6 @@
 
 {% else %}
 <main>
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in messages %}
-      <div class="alert alert-{{ cat }} alert-center">{{ msg }}</div>
-    {% endfor %}
-  {% endwith %}
   {% block auth_content %}{% endblock %}
 </main>
 {% endif %}

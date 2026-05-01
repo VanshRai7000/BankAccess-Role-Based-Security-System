@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Withdraw — SecureBank{% endblock %}
+{% block page_title %}Withdraw Funds{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="card form-card">
+    <div class="form-icon">💸</div>
+    <h2>Withdraw Funds</h2>
+    <p class="form-sub">
+      {% if session.role == 'customer' %}
+        Withdrawals are limited to ₹{{ "{:,.0f}".format(limit) }} per transaction and require manager approval.
+      {% else %}
+        Withdraw from any customer account. Processed immediately.
+      {% endif %}
+    </p>
+
+    {% if limit %}
+    <div class="info-banner">
+      ⚠️ Maximum withdrawal limit: <strong>₹{{ "{:,.0f}".format(limit) }}</strong> per transaction.
+      Pending manager/admin approval before funds are deducted.
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('withdraw') }}">
+      <div class="form-group">
+        <label for="account_id">Select Account</label>
+        <select id="account_id" name="account_id" required>
+          <option value="">— Select an account —</option>
+          {% for a in accounts %}
+          <option value="{{ a.account_id }}">
+            {{ a.account_number }}
+            {% if session.role != 'customer' %} — {{ a.full_name }} ({{ a.username }}){% endif %}
+            — ₹{{ "{:,.2f}".format(a.balance) }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount (₹){% if limit %} — max ₹{{ "{:,.0f}".format(limit) }}{% endif %}</label>
+        <input id="amount" name="amount" type="number" min="1"
+               {% if limit %}max="{{ limit }}"{% endif %}
+               step="0.01" placeholder="Enter amount" required/>
+      </div>
+      <div class="form-group">
+        <label for="notes">Notes (optional)</label>
+        <input id="notes" name="notes" type="text" placeholder="e.g. Rent payment"/>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-warning btn-full">💸 Withdraw</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

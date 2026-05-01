@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Transactions — SecureBank{% endblock %}
+{% block page_title %}Transaction Approval{% endblock %}
+
+{% block content %}
+
+{% if pending %}
+<div class="section-title">⏳ Pending Transactions ({{ pending|length }})</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Customer</th><th>Account</th><th>Type</th><th>Amount</th><th>Acc. Balance</th><th>Notes</th><th>Requested</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for t in pending %}
+        <tr class="row-pending">
+          <td>#{{ t.id }}</td>
+          <td>{{ t.full_name }}<br><span class="text-muted small">{{ t.username }}</span></td>
+          <td><code>{{ t.account_number }}</code></td>
+          <td><span class="badge badge-warning">{{ t.type }}</span></td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.acc_balance) }}</td>
+          <td class="text-muted small">{{ t.notes or '—' }}</td>
+          <td class="text-muted small">{{ t.created_at[:16] }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('approve_txn', txn_id=t.id) }}" style="display:inline">
+              <button class="btn btn-success btn-sm">✅ Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('reject_txn', txn_id=t.id) }}" style="display:inline">
+              <button class="btn btn-danger btn-sm">❌ Reject</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">✅</div>
+  <div class="empty-text">No pending transactions — all clear!</div>
+</div>
+{% endif %}
+
+<div class="section-title">Transaction History (last 30)</div>
+{% if history %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>#</th><th>Customer</th><th>Account</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for t in history %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td>{{ t.username }}</td>
+          <td><code>{{ t.account_number }}</code></td>
+          <td><span class="badge badge-{{ 'success' if t.type == 'deposit' else 'warning' }}">{{ t.type }}</span></td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
+          <td>
+            {% if t.status in ['completed','approved'] %}<span class="badge badge-success">{{ t.status }}</span>
+            {% else %}<span class="badge badge-danger">{{ t.status }}</span>{% endif %}
+          </td>
+          <td class="text-muted small">{{ t.updated_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

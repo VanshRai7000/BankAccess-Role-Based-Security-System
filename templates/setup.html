@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}First-Time Setup — {{ bank_name }}{% endblock %}
+
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-logo">🏦</div>
+      <h1>{{ bank_name }}</h1>
+      <p>First-Time System Setup</p>
+    </div>
+    <div class="login-features">
+      <div class="feature-item"><span>1️⃣</span> Create your first Administrator account</div>
+      <div class="feature-item"><span>2️⃣</span> Login with admin credentials</div>
+      <div class="feature-item"><span>3️⃣</span> Add managers, tellers, and customers via the Users panel</div>
+      <div class="feature-item"><span>4️⃣</span> Configure bank settings in the Settings panel</div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+      <h2>Create Admin Account</h2>
+      <p class="login-sub">This setup page is only accessible when no users exist in the system.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('setup') }}">
+        <div class="form-group">
+          <label for="full_name">Full Name</label>
+          <input id="full_name" name="full_name" type="text" placeholder="e.g. John Admin" required/>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="e.g. admin@bank.com"/>
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="Choose a username" required autocomplete="username"/>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Choose a strong password" required autocomplete="new-password"/>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input id="confirm_password" name="confirm_password" type="password" placeholder="Repeat password" required autocomplete="new-password"/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">🚀 Create Admin &amp; Launch System</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

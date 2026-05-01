@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Settings — {{ bank_name }}{% endblock %}
+{% block page_title %}Bank Settings{% endblock %}
+
+{% block content %}
+<div class="info-banner">
+  ⚡ All changes take effect <strong>immediately</strong> — no server restart required.
+  These values replace every previously hardcoded business rule.
+</div>
+
+<form method="POST" action="{{ url_for('manage_settings') }}">
+  <div class="card">
+    <div class="card-header">
+      <span>💰 Transaction Limits</span>
+    </div>
+    <div class="settings-grid">
+      {% for s in settings if s.key in ['customer_withdraw_limit','require_approval_above','max_deposit_per_txn','min_account_balance'] %}
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-key">{{ s.key }}</div>
+          <div class="setting-desc">{{ s.description }}</div>
+        </div>
+        <div class="setting-control">
+          <input type="number" name="setting_{{ s.key }}"
+                 value="{{ s.value }}" step="0.01" min="0"
+                 class="setting-input"/>
+          <span class="setting-unit">₹ / INR</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span>🏦 Account Defaults</span>
+    </div>
+    <div class="settings-grid">
+      {% for s in settings if s.key in ['account_number_prefix','default_account_type'] %}
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-key">{{ s.key }}</div>
+          <div class="setting-desc">{{ s.description }}</div>
+        </div>
+        <div class="setting-control">
+          {% if s.key == 'default_account_type' %}
+          <select name="setting_{{ s.key }}" class="setting-input">
+            <option value="savings"  {% if s.value == 'savings'  %}selected{% endif %}>Savings</option>
+            <option value="current"  {% if s.value == 'current'  %}selected{% endif %}>Current</option>
+            <option value="fixed"    {% if s.value == 'fixed'    %}selected{% endif %}>Fixed Deposit</option>
+          </select>
+          {% else %}
+          <input type="text" name="setting_{{ s.key }}" value="{{ s.value }}" class="setting-input"/>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span>📋 Display & Audit</span>
+    </div>
+    <div class="settings-grid">
+      {% for s in settings if s.key in ['txn_page_size','log_retention_count','session_timeout_minutes'] %}
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-key">{{ s.key }}</div>
+          <div class="setting-desc">{{ s.description }}</div>
+        </div>
+        <div class="setting-control">
+          <input type="number" name="setting_{{ s.key }}"
+                 value="{{ s.value }}" min="1" class="setting-input"/>
+          <span class="setting-unit">records</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span>🏷️ Branding</span>
+    </div>
+    <div class="settings-grid">
+      {% for s in settings if s.key in ['bank_name','bank_tagline'] %}
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-key">{{ s.key }}</div>
+          <div class="setting-desc">{{ s.description }}</div>
+        </div>
+        <div class="setting-control">
+          <input type="text" name="setting_{{ s.key }}" value="{{ s.value }}" class="setting-input"/>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button type="submit" class="btn btn-primary">💾 Save All Settings</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Cancel</a>
+  </div>
+</form>
+
+<div class="section-title">All Settings (Raw View)</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Key</th><th>Current Value</th><th>Description</th></tr></thead>
+      <tbody>
+        {% for s in settings %}
+        <tr>
+          <td><code>{{ s.key }}</code></td>
+          <td><strong>{{ s.value }}</strong></td>
+          <td class="text-muted small">{{ s.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

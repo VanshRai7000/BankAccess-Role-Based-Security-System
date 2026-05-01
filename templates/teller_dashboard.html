@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Teller Dashboard — SecureBank{% endblock %}
+{% block page_title %}Teller Dashboard{% endblock %}
+
+{% block content %}
+<div class="action-bar">
+  <a href="{{ url_for('deposit') }}" class="btn btn-success">💰 Deposit to Account</a>
+  <a href="{{ url_for('withdraw') }}" class="btn btn-warning">💸 Withdraw from Account</a>
+</div>
+
+<div class="section-title">Customer Accounts</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Account No.</th><th>Owner</th><th>Type</th><th>Balance</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for a in accounts %}
+        <tr>
+          <td><code>{{ a.account_number }}</code></td>
+          <td>{{ a.full_name }} <span class="text-muted small">({{ a.username }})</span></td>
+          <td>{{ a.account_type }}</td>
+          <td class="amount">₹{{ "{:,.2f}".format(a.balance) }}</td>
+          <td>
+            <a href="{{ url_for('deposit') }}" class="btn btn-success btn-sm">Deposit</a>
+            <a href="{{ url_for('withdraw') }}" class="btn btn-warning btn-sm">Withdraw</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-title">My Recent Transactions</div>
+{% if recent_txns %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>#</th><th>Account</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for t in recent_txns %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td><code>{{ t.account_number }}</code></td>
+          <td>{{ t.username }}</td>
+          <td><span class="badge badge-{{ 'success' if t.type == 'deposit' else 'warning' }}">{{ t.type }}</span></td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
+          <td>
+            {% if t.status == 'completed' %}<span class="badge badge-success">Completed</span>
+            {% elif t.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+            {% elif t.status == 'approved' %}<span class="badge badge-success">Approved</span>
+            {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+          </td>
+          <td class="text-muted small">{{ t.created_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <div class="empty-text">No transactions yet.</div>
+</div>
+{% endif %}
+{% endblock %}

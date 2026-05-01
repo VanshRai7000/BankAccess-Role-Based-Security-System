@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Login — {{ bank_name }}{% endblock %}
+
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-logo">🏦</div>
+      <h1>{{ bank_name }}</h1>
+      <p>{{ get_setting('bank_tagline', 'Role-Based Access Control Banking System') }}</p>
+    </div>
+    <div class="login-features">
+      <div class="feature-item"><span>🔐</span> Session-based Authentication</div>
+      <div class="feature-item"><span>👤</span> 4 Distinct Role Levels</div>
+      <div class="feature-item"><span>📋</span> Full Audit Trail Logging</div>
+      <div class="feature-item"><span>🛡️</span> Principle of Least Privilege</div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+      <h2>Sign In</h2>
+      <p class="login-sub">Enter your credentials to access your dashboard</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="Enter username"
+                 required autocomplete="username"/>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Enter password"
+                 required autocomplete="current-password"/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Sign In →</button>
+      </form>
+
+      {# ── Quick-select panel: only shown when users exist ── #}
+      {% if active_users %}
+      <div class="demo-creds">
+        <div class="demo-label">QUICK SELECT — click to fill credentials</div>
+        <div class="demo-select-grid">
+          {% set role_icons = {'admin': '🔴', 'manager': '🟣', 'teller': '🔵', 'customer': '🟢'} %}
+          {% for u in active_users %}
+          <button type="button"
+                  class="demo-select-btn role-btn-{{ u.role }}"
+                  onclick="fillLogin('{{ u.username }}', '{{ u.role }}')">
+            <span class="demo-select-icon">{{ role_icons.get(u.role, '⚪') }}</span>
+            <span class="demo-select-info">
+              <span class="demo-select-role">{{ u.role | upper }}</span>
+              <span class="demo-select-user">{{ u.username }}</span>
+            </span>
+          </button>
+          {% endfor %}
+        </div>
+        <p class="demo-hint">⚠️ Password is not stored here. Enter it manually after selecting.</p>
+      </div>
+      {% endif %}
+
+      <p class="login-footer">
+        Contact your system administrator to get access credentials.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function fillLogin(username, role) {
+  document.getElementById('username').value = username;
+  document.getElementById('password').focus();
+
+  // Visual feedback — flash the selected button
+  document.querySelectorAll('.demo-select-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+</script>
+{% endblock %}

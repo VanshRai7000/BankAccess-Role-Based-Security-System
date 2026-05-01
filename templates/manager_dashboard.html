@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Manager Dashboard — SecureBank{% endblock %}
+{% block page_title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card stat-gold">
+    <div class="stat-icon">💰</div>
+    <div class="stat-body">
+      <div class="stat-value">₹{{ "{:,.0f}".format(total) }}</div>
+      <div class="stat-label">Total Bank Balance</div>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ pending|length }}</div>
+      <div class="stat-label">Pending Approvals</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">🏦</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ accounts|length }}</div>
+      <div class="stat-label">Total Accounts</div>
+    </div>
+  </div>
+</div>
+
+{% if pending %}
+<div class="section-title">⏳ Pending Approval Requests</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Customer</th><th>Account</th><th>Type</th><th>Amount</th><th>Acc. Balance</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for t in pending %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td>{{ t.full_name }}</td>
+          <td><code>{{ t.account_number }}</code></td>
+          <td><span class="badge badge-{{ 'success' if t.type == 'deposit' else 'warning' }}">{{ t.type }}</span></td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
+          <td class="amount">₹{{ "{:,.2f}".format(t.acc_balance) }}</td>
+          <td class="text-muted small">{{ t.created_at[:16] }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('approve_txn', txn_id=t.id) }}" style="display:inline">
+              <button class="btn btn-success btn-sm">✅ Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('reject_txn', txn_id=t.id) }}" style="display:inline">
+              <button class="btn btn-danger btn-sm">❌ Reject</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">✅</div>
+  <div class="empty-text">No pending transactions. All clear!</div>
+</div>
+{% endif %}
+
+<div class="section-title">All Customer Accounts</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Account No.</th><th>Owner</th><th>Type</th><th>Balance</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for a in accounts %}
+        <tr>
+          <td><code>{{ a.account_number }}</code></td>
+          <td>{{ a.full_name }} <span class="text-muted small">({{ a.username }})</span></td>
+          <td>{{ a.account_type }}</td>
+          <td class="amount">₹{{ "{:,.2f}".format(a.balance) }}</td>
+          <td class="text-muted small">{{ a.created_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

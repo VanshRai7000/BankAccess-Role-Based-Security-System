@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Audit Logs — {{ bank_name }}{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="stat-card stat-green">
+    <div class="stat-icon">✅</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ logs | selectattr('status', 'in', ['SUCCESS','ALLOWED']) | list | length }}</div>
+      <div class="stat-label">Allowed Actions</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon">🚫</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ logs | selectattr('status', 'in', ['DENIED','FAILED']) | list | length }}</div>
+      <div class="stat-label">Denied / Failed</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">📋</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ total_count }}</div>
+      <div class="stat-label">Total Log Entries</div>
+    </div>
+  </div>
+</div>
+
+<!-- Action bar -->
+{% if check_permission(session.role, 'delete') %}
+<div class="action-bar">
+  <form method="POST" action="{{ url_for('clear_logs') }}"
+        onsubmit="return confirm('Delete ALL {{ total_count }} log entries? This cannot be undone.')">
+    <button class="btn btn-danger">🗑️ Clear All Logs ({{ total_count }} entries)</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <span>Audit Trail (showing {{ logs|length }} of {{ total_count }})</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Status</th>
+          <th>Details</th>
+          <th>IP</th>
+          <th>Timestamp</th>
+          {% if check_permission(session.role, 'delete') %}<th>Delete</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="{{ 'row-denied' if log.status in ['DENIED','FAILED'] else '' }}" id="log-row-{{ log.id }}">
+          <td>#{{ log.id }}</td>
+          <td>{{ log.username or '<em>anon</em>' }}</td>
+          <td><code>{{ log.action }}</code></td>
+          <td>
+            {% if log.status in ['SUCCESS','ALLOWED'] %}
+              <span class="badge badge-success">{{ log.status }}</span>
+            {% else %}
+              <span class="badge badge-danger">{{ log.status }}</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ log.details or '—' }}</td>
+          <td class="text-muted small">{{ log.ip_address or '—' }}</td>
+          <td class="text-muted small">{{ log.timestamp[:19] }}</td>
+          {% if check_permission(session.role, 'delete') %}
+          <td>
+            <form method="POST" action="{{ url_for('delete_log', log_id=log.id) }}">
+              <button class="btn btn-danger btn-sm" title="Delete this log entry">🗑️</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if logs|length == 0 %}
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <div class="empty-text">No log entries found.</div>
+</div>
+{% endif %}
+{% endblock %}

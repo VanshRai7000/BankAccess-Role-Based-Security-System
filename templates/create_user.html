@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Create User — SecureBank{% endblock %}
+{% block page_title %}Create New User{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="card form-card">
+    <div class="form-icon">👤</div>
+    <h2>Create New User</h2>
+    <p class="form-sub">Add a new user and assign their role.</p>
+
+    <form method="POST" action="{{ url_for('create_user') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="full_name">Full Name</label>
+          <input id="full_name" name="full_name" type="text" placeholder="e.g. John Smith" required/>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="e.g. john@bank.com"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="e.g. jsmith" required/>
+        </div>
+        <div class="form-group">
+          <label for="role">Role</label>
+          <select id="role" name="role" required>
+            <option value="">— Select role —</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="teller">Teller</option>
+            <option value="customer">Customer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password">Initial Password</label>
+        <input id="password" name="password" type="password" placeholder="Set a strong password" required/>
+      </div>
+      <div id="customer-fields" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="account_type">Account Type</label>
+            <select id="account_type" name="account_type">
+              <option value="savings"  {% if default_type == 'savings'  %}selected{% endif %}>Savings</option>
+              <option value="current"  {% if default_type == 'current'  %}selected{% endif %}>Current</option>
+              <option value="fixed"    {% if default_type == 'fixed'    %}selected{% endif %}>Fixed Deposit</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="opening_balance">Opening Balance (₹)</label>
+            <input id="opening_balance" name="opening_balance" type="number" min="0" step="0.01" value="0" placeholder="e.g. 5000"/>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-full">➕ Create User</button>
+        <a href="{{ url_for('manage_users') }}" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  document.getElementById('role').addEventListener('change', function() {
+    document.getElementById('customer-fields').style.display =
+      this.value === 'customer' ? 'block' : 'none';
+  });
+</script>
+{% endblock %}

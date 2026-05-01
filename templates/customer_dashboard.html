@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard — SecureBank{% endblock %}
+{% block page_title %}My Account{% endblock %}
+
+{% block content %}
+{% if account %}
+<div class="stats-grid">
+  <div class="stat-card stat-gold">
+    <div class="stat-icon">💳</div>
+    <div class="stat-body">
+      <div class="stat-value">₹{{ "{:,.2f}".format(account.balance) }}</div>
+      <div class="stat-label">Available Balance</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">🔢</div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.1rem">{{ account.account_number }}</div>
+      <div class="stat-label">Account Number</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">🏦</div>
+    <div class="stat-body">
+      <div class="stat-value" style="font-size:1.2rem">{{ account.account_type|capitalize }}</div>
+      <div class="stat-label">Account Type</div>
+    </div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <a href="{{ url_for('deposit') }}" class="btn btn-success">💰 Deposit</a>
+  <a href="{{ url_for('withdraw') }}" class="btn btn-warning">💸 Withdraw (max ₹{{ "{:,.0f}".format(limit) }})</a>
+</div>
+
+<div class="info-banner">
+  ℹ️ Withdrawals above ₹0 require manager approval and will be placed in <strong>pending</strong> status.
+  Maximum withdrawal per transaction: <strong>₹{{ "{:,.0f}".format(limit) }}</strong>.
+</div>
+
+<div class="section-title">Transaction History</div>
+{% if txns %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>#</th><th>Type</th><th>Amount</th><th>Status</th><th>Notes</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for t in txns %}
+        <tr>
+          <td>#{{ t.id }}</td>
+          <td><span class="badge badge-{{ 'success' if t.type == 'deposit' else 'warning' }}">{{ t.type }}</span></td>
+          <td class="amount {% if t.type == 'deposit' %}amount-pos{% else %}amount-neg{% endif %}">
+            {{ '+' if t.type == 'deposit' else '-' }}₹{{ "{:,.2f}".format(t.amount) }}
+          </td>
+          <td>
+            {% if t.status == 'completed' %}<span class="badge badge-success">Completed</span>
+            {% elif t.status == 'approved' %}<span class="badge badge-success">Approved</span>
+            {% elif t.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+            {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+          </td>
+          <td class="text-muted small">{{ t.notes or '—' }}</td>
+          <td class="text-muted small">{{ t.created_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <div class="empty-text">No transactions yet.</div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🏦</div>
+  <div class="empty-text">No account found. Please contact admin.</div>
+</div>
+{% endif %}
+{% endblock %}

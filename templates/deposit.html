@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Deposit — SecureBank{% endblock %}
+{% block page_title %}Deposit Funds{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="card form-card">
+    <div class="form-icon">💰</div>
+    <h2>Make a Deposit</h2>
+    <p class="form-sub">
+      {% if session.role == 'customer' %}Deposit funds to your account.
+      {% else %}Deposit funds to any customer account.{% endif %}
+    </p>
+
+    <form method="POST" action="{{ url_for('deposit') }}">
+      <div class="form-group">
+        <label for="account_id">Select Account</label>
+        <select id="account_id" name="account_id" required>
+          <option value="">— Select an account —</option>
+          {% for a in accounts %}
+          <option value="{{ a.account_id }}">
+            {{ a.account_number }}
+            {% if session.role != 'customer' %} — {{ a.full_name }} ({{ a.username }}){% endif %}
+            — ₹{{ "{:,.2f}".format(a.balance) }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount (₹)</label>
+        <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="Enter amount" required/>
+      </div>
+      <div class="form-group">
+        <label for="notes">Notes (optional)</label>
+        <input id="notes" name="notes" type="text" placeholder="e.g. Monthly savings"/>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success btn-full">💰 Deposit Now</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

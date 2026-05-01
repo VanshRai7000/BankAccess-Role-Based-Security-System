@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — SecureBank{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">👥</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.users_count }}</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">🏦</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.accounts_count }}</div>
+      <div class="stat-label">Bank Accounts</div>
+    </div>
+  </div>
+  <div class="stat-card stat-gold">
+    <div class="stat-icon">💰</div>
+    <div class="stat-body">
+      <div class="stat-value">₹{{ "{:,.0f}".format(stats.total_balance) }}</div>
+      <div class="stat-label">Total Deposits</div>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.pending_txns }}</div>
+      <div class="stat-label">Pending Txns</div>
+    </div>
+  </div>
+  <div class="stat-card stat-purple">
+    <div class="stat-icon">📊</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.total_txns }}</div>
+      <div class="stat-label">Total Transactions</div>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-icon">🚫</div>
+    <div class="stat-body">
+      <div class="stat-value">{{ stats.denied_logs }}</div>
+      <div class="stat-label">Access Denied Events</div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section-title">Quick Actions</div>
+<div class="action-bar">
+  <a href="{{ url_for('deposit') }}" class="btn btn-primary">💰 Deposit</a>
+  <a href="{{ url_for('withdraw') }}" class="btn btn-success">💸 Withdraw</a>
+  <a href="{{ url_for('transactions') }}" class="btn btn-teal">✅ Approve Transactions</a>
+  <a href="{{ url_for('create_user') }}" class="btn btn-secondary">➕ Create User</a>
+  <a href="{{ url_for('view_logs') }}" class="btn btn-outline">📋 View Audit Logs</a>
+</div>
+
+<div class="two-col">
+  <!-- Users Table -->
+  <div class="card">
+    <div class="card-header">
+      <span>All Users</span>
+      <a href="{{ url_for('manage_users') }}" class="card-link">Manage →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.full_name or '—' }}</td>
+            <td><code>{{ u.username }}</code></td>
+            <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+            <td>
+              {% if u.is_active %}
+                <span class="badge badge-success">Active</span>
+              {% else %}
+                <span class="badge badge-danger">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Logs -->
+  <div class="card">
+    <div class="card-header">
+      <span>Recent Audit Logs</span>
+      <a href="{{ url_for('view_logs') }}" class="card-link">All Logs →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>User</th><th>Action</th><th>Status</th><th>Time</th></tr></thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td>{{ log.username or 'anon' }}</td>
+            <td><code>{{ log.action }}</code></td>
+            <td>
+              {% if log.status in ['SUCCESS','ALLOWED'] %}
+                <span class="badge badge-success">{{ log.status }}</span>
+              {% else %}
+                <span class="badge badge-danger">{{ log.status }}</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ log.timestamp[:16] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
